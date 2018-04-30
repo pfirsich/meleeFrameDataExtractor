@@ -1,0 +1,54 @@
+.a1i1 {
+    background-image: linear-gradient(bottom, #CC142C 50%, #05AFFF 50%);
+    background-image: -o-linear-gradient(bottom, #CC142C 50%, #05AFFF 50%);
+    background-image: -moz-linear-gradient(bottom, #CC142C 50%, #05AFFF 50%);
+    background-image: -webkit-linear-gradient(bottom, #CC142C 50%, #05AFFF 50%);
+    background-image: -ms-linear-gradient(bottom, #CC142C 50%, #05AFFF 50%);
+}
+
+.a1i0 {
+    background-color: #05AFFF;
+}
+
+.a0i1 {
+    background-color: #CC142C;
+}
+
+.a0i0 {
+    background-color: #bbb;
+}
+
+.h0:before {
+    content: "";
+}
+
+.h1:before {
+    content: "\25CB";
+}
+
+.h2:before {
+    content: "\25CE";
+}
+
+.framegraph td {
+    width: 20px;
+    height: 20px;
+    line-height: 15px;
+    border: 1px solid #888;
+}
+
+.framegraph {
+    /*border: 1px solid #000;*/
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+    font-size: 22px;
+    font-family: Consolas;
+    color: #FFF733;
+    border-collapse: collapse;
+}
+
+.framegraph div {
+    width: 100%;
+    height: 100%;
+}
