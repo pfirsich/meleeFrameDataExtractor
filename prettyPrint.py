@@ -57,7 +57,9 @@ def frameRangeString(start, end):
         return "{}-{}".format(start, end)
 
 def printAttackSummary(summary):
-    print()
+    if summary == None:
+        quit("Attack does not exist.")
+
     print("Total Frames:", summary["totalFrames"])
     print("IASA: ", summary["iasa"])
     if "landingLag" in summary:
@@ -82,26 +84,36 @@ def printAttackSummary(summary):
     hitboxGuidToName = lambda x: chr(ord("A") + x)
 
     print()
-    hitFrames = summary["hitFrames"]
-    sameHitboxesForAllHitframes = \
-        all(hitFrame["hitboxes"] == hitFrames[0]["hitboxes"] for hitFrame in hitFrames)
-    if sameHitboxesForAllHitframes:
-        hitFrameStr = ", ".join(frameRangeString(hitFrame["start"], hitFrame["end"]) for hitFrame in hitFrames)
-        print("Hit Frames: " + hitFrameStr)
-    else:
-        print("Hit Frames:")
-        for hitFrame in hitFrames:
-            translatedHitboxes = map(hitboxGuidToName, hitFrame["hitboxes"])
-            print("{}: {}".format(
-                frameRangeString(hitFrame["start"], hitFrame["end"]),
-                ", ".join(translatedHitboxes)))
+    if "hitboxes" in summary: # grouped hitboxes
+        hitFrames = summary["hitFrames"]
+        sameHitboxesForAllHitframes = \
+            all(hitFrame["hitboxes"] == hitFrames[0]["hitboxes"] for hitFrame in hitFrames)
+        if sameHitboxesForAllHitframes:
+            hitFrameStr = ", ".join(frameRangeString(hitFrame["start"], hitFrame["end"]) for hitFrame in hitFrames)
+            print("Hit Frames: " + hitFrameStr)
+        else:
+            print("Hit Frames:")
+            for hitFrame in hitFrames:
+                translatedHitboxes = map(hitboxGuidToName, hitFrame["hitboxes"])
+                print("{}: {}".format(
+                    frameRangeString(hitFrame["start"], hitFrame["end"]),
+                    ", ".join(translatedHitboxes)))
 
-    for i, hitbox in enumerate(summary["hitboxes"]):
-        print()
-        # No need for color names/headlines if only one hitbox group
-        if len(summary["hitboxes"]) > 1:
-            print("Hitbox {}".format(hitboxGuidToName(i)))
-        printHitbox(hitbox)
+        for i, hitbox in enumerate(summary["hitboxes"]):
+            print()
+            # No need for color names/headlines if only one hitbox group
+            if len(summary["hitboxes"]) > 1:
+                print("Hitbox {}".format(hitboxGuidToName(i)))
+            printHitbox(hitbox)
+    else: # --fullhitboxes
+        print("Hit Frames:")
+        for hitFrame in summary["hitFrames"]:
+            print(frameRangeString(hitFrame["start"], hitFrame["end"]) + ":")
+            for hitbox in hitFrame["hitboxes"]:
+                print("id: {}, bone: {}, size: {:.3f}, x: {:.3f}, y: {:.3f}, z: {:.3f}".format(
+                    hitbox["id"], hitbox["bone"], hitbox["size"], hitbox["x"], hitbox["y"], hitbox["z"]))
+                printHitbox(hitbox)
+                print()
 
 def main():
     parser = argparse.ArgumentParser(description="Print framedata JSON files nicely.")
