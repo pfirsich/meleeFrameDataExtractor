@@ -50,22 +50,6 @@ def printHitbox(hitbox):
     s += ", shield stun: {}".format(shieldstun(hitbox["damage"]))
     print(s)
 
-# returns a replacement of the hitFrames-list with a list of hitbox groups of that hitframe, instead of hitboxes
-# also returns a list of hitboxes as a LUT for the hitbox group ids
-def getHitboxGroups(hitFrames):
-    hitFrameGroups = []
-    hitboxGroups = []
-
-    for hitFrame in hitFrames:
-        groupSet = set()
-        for hitbox in hitFrame["hitboxes"]:
-            groupSet.add(hitbox["groupId"])
-            if hitbox["groupId"] >= len(hitboxGroups):
-                hitboxGroups.append(hitbox)
-        hitFrameGroups.append((hitFrame["start"], hitFrame["end"], sorted(groupSet)))
-
-    return hitFrameGroups, hitboxGroups
-
 def frameRangeString(start, end):
     if start == end:
         return str(start)
@@ -95,35 +79,28 @@ def printAttackSummary(summary):
 
         print(s)
 
-    # hit frames
-    hitFrameGroups, hitboxGroups = getHitboxGroups(summary["hitFrames"])
-
-    sameHitboxesForAllHitframes = True
-    for hitFrame in hitFrameGroups:
-        for other in hitFrameGroups:
-            if hitFrame[2] != other[2]:
-                sameHitboxesForAllHitframes = False
-                break
-
-    #hitboxGuidToName = lambda x: chr(ord("A") + x)
-    hitboxGuidToName = lambda x: ["red", "green", "yellow", "blue", "orange"][x]
+    hitboxGuidToName = lambda x: chr(ord("A") + x)
 
     print()
+    hitFrames = summary["hitFrames"]
+    sameHitboxesForAllHitframes = \
+        all(hitFrame["hitboxes"] == hitFrames[0]["hitboxes"] for hitFrame in hitFrames)
     if sameHitboxesForAllHitframes:
-        hitFrameStr = ", ".join(frameRangeString(hitFrame[0], hitFrame[1]) for hitFrame in hitFrameGroups)
+        hitFrameStr = ", ".join(frameRangeString(hitFrame["start"], hitFrame["end"]) for hitFrame in hitFrames)
         print("Hit Frames: " + hitFrameStr)
     else:
         print("Hit Frames:")
-        for hitFrame in hitFrameGroups:
-            start, end, hitboxes = hitFrame
-            translatedHitboxes = map(hitboxGuidToName, hitboxes)
-            print("{}: {}".format(frameRangeString(start, end), ", ".join(translatedHitboxes)))
+        for hitFrame in hitFrames:
+            translatedHitboxes = map(hitboxGuidToName, hitFrame["hitboxes"])
+            print("{}: {}".format(
+                frameRangeString(hitFrame["start"], hitFrame["end"]),
+                ", ".join(translatedHitboxes)))
 
-    for hitbox in hitboxGroups:
+    for i, hitbox in enumerate(summary["hitboxes"]):
         print()
         # No need for color names/headlines if only one hitbox group
-        if len(hitboxGroups) > 1:
-            print("Hitbox {}".format(hitboxGuidToName(hitbox["groupId"])))
+        if len(summary["hitboxes"]) > 1:
+            print("Hitbox {}".format(hitboxGuidToName(i)))
         printHitbox(hitbox)
 
 def main():

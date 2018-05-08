@@ -112,6 +112,20 @@ class Hitbox(object):
             ("groupId", self.groupId),
         ])
 
+    def toJsonDict_onlyEffect(self):
+        return odict([
+            ("damage", self.damage),
+            ("angle", self.angle),
+            ("kb_growth", self.kb_growth),
+            ("weight_dep_kb", self.weight_dep_kb),
+            ("hitbox_interaction", self.hitbox_interaction),
+            ("base_kb", self.base_kb),
+            ("element", self.element),
+            ("shield_damage", self.shield_damage),
+            ("hit_grounded", self.hit_grounded),
+            ("hit_airborne", self.hit_airborne),
+        ])
+
 class Throw(object):
     def __init__(self, throw_json):
         # Throw commands always come in pairs.
@@ -306,7 +320,7 @@ def expandSubroutines(events, subroutines, selfOffset=None, visited=None):
             ret.append(event)
     return ret
 
-def getAttackSummary(data, subactionIndex):
+def getAttackSummary(data, subactionIndex, fullHitboxes):
     summary = odict()
 
     ftData = data["nodes"][0]["data"]
@@ -349,8 +363,8 @@ def getAttackSummary(data, subactionIndex):
         summary["autoCancelBefore"] = autoCancelBefore
         summary["autoCancelAfter"] = autoCancelAfter
 
-        aerialNames = {0x44: "nair", 0x45: "fair", 0x46: "bair", 0x47: "uair", 0x48: "dair"}
-        landingLag = int(ftData["attributes"][aerialNames[subactionIndex] + "_landing_lag"])
+        landingLagAttribute = subactionIndex - 0x44 + 0x3a
+        landingLag = int(ftData["attributes"][landingLagAttribute]["value"])
         summary["landingLag"] = landingLag
         summary["lcancelledLandingLag"] = math.floor(landingLag/2.0)
 
@@ -372,16 +386,24 @@ def getAttackSummary(data, subactionIndex):
 
         if lastHitboxSet != hitboxSet:
             if len(lastHitboxSet) > 0:
+                if fullHitboxes:
+                    hitboxes = [hitbox.toJsonDict() for hitbox in frameData[i-1].hitboxes.values()]
+                else:
+                    hitboxes = sorted({hitbox.groupId for hitbox in frameData[i-1].hitboxes.values()})
                 hitFrames.append(odict([
                     ("start", lastHitboxSetStart),
                     ("end", i),
-                    ("hitboxes", [hitbox.toJsonDict() for hitbox in frameData[i-1].hitboxes.values()]),
+                    ("hitboxes", hitboxes),
                 ]))
             lastHitboxSetStart = i+1
 
         lastHitboxSet = hitboxSet
 
     summary["hitFrames"] = hitFrames
+
+    if not fullHitboxes:
+        # a representative hitbox for each groupId
+        summary["hitboxes"] = [hitbox.toJsonDict_onlyEffect() for hitbox in Hitbox.uniqueHitboxes]
 
     print()
 
@@ -393,6 +415,7 @@ def main():
     parser.add_argument("outfile", help="The path to write the JSON output to.")
     parser.add_argument("--subactions", nargs="*", help="The subaction to analyze. Can be a subaction index or one of: " + ", ".join(attackMapping.keys()))
     parser.add_argument("--print", default=False, action="store_true", help="Print the contents of the JSON file nicely.")
+    parser.add_argument("--fullhitboxes", default=False, action="store_true", help="Don't group the hitboxes by functional sameness, but rather include the all hitboxes fully (including boneId, size, transformations) in each hitframe.")
     args = parser.parse_args()
 
     defaultSubactions = attackMapping
@@ -425,7 +448,7 @@ def main():
 
     out_json = odict()
     for name, subactionIndex in subactions.items():
-        summary = getAttackSummary(data, subactionIndex)
+        summary = getAttackSummary(data, subactionIndex, args.fullhitboxes)
         out_json[name] = summary
 
         if args.print and summary:
