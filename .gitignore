@@ -1,5 +1,2 @@
 # datJson contains my dumped character files, out is just an ignored folder for output
-datJson/
-out/
-*.dat
 **/__pycache__

@@ -170,7 +170,8 @@ class FrameInfo(object):
 # This whole function is maybe super weird, but it's too much of a hassle to get rid of now
 def getFrameData(events, totalFrames, airNormal):
     ignoreEvents = ["exit", "graphic_common", "rumble", "sfx", "continuation_control?",
-        "random_smash_sfx"]
+        "random_smash_sfx", "reverse_direction", "animate_texture", "sword_trail",
+        "bodyaura", "adjust_hitbox_size", "animate_model", "pseudo_random_sfx"]
 
     # in case this got called multiple times
     Hitbox.uniqueHitboxes = []
@@ -215,6 +216,17 @@ def getFrameData(events, totalFrames, airNormal):
                     activeHitboxes[eFields["id"]] = Hitbox(eFields)
                     if eFields["element"] == "grab":
                         isGrabAttack = True
+                elif eName == "adjust_hitbox_damage":
+                    print("Adjust hitbox damage!:", eFields, event["bytes"])
+                    hitboxId = eFields["hitbox_id"]
+                    # This is not an assert, because some attacks (e.g. Link's AttackAirHi (uair))
+                    # adjust the damage for hitboxes that are not active
+                    # I am not 100% sure how to handle it correctly, but I assume it's fine to just ignore it
+                    if hitboxId in activeHitboxes:
+                        activeHitboxes[hitboxId] = Hitbox(activeHitboxes[hitboxId].toJsonDict())
+                        activeHitboxes[hitboxId].damage = eFields["damage"]
+                    else:
+                        print("Adjust damage for non-active hitbox {}!".format(hitboxId))
                 elif eName == "throw":
                     if isGrabAttack:
                         # grabs have a throw release command after their hitboxes
@@ -331,7 +343,7 @@ def getAttackSummary(data, subactionIndex, fullHitboxes):
     summary["subactionName"] = subaction["name"]
 
     if not "animationFile" in subaction:
-        print("No animation! This character possibly does not have this attack.")
+        print("No animation! This character possibly does not have this attack.\n")
         return None
     animation = data["animationFiles"][subaction["animationFile"]]["nodes"][0]
     print("Animation: {} - {}".format(animation["name"], animation["shortName"]))
@@ -347,7 +359,7 @@ def getAttackSummary(data, subactionIndex, fullHitboxes):
 
     events = expandSubroutines(subaction["events"], ftData["subroutines"])
     if events == None:
-        print("Recursion detected!")
+        print("Recursion detected!\n")
         return None
 
     frameData = getFrameData(events, totalFrames, airNormal)
