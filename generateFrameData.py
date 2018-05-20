@@ -48,28 +48,28 @@ class Hitbox(object):
     uniqueHitboxes = [] # unique in the sense of "sameEffect"
     allHitboxes = []
 
-    def __init__(self, hitbox_json):
+    def __init__(self, hitboxJson):
         self.guid = len(Hitbox.allHitboxes)
         Hitbox.allHitboxes.append(self)
 
-        self.id = hitbox_json["id"]
-        self.bone = hitbox_json["bone"]
-        self.damage = hitbox_json["damage"]
+        self.id = hitboxJson["id"]
+        self.bone = hitboxJson["bone"]
+        self.damage = hitboxJson["damage"]
 
-        self.size = hitbox_json["size"]
-        self.x, self.y, self.z = hitbox_json["x"], hitbox_json["y"], hitbox_json["z"]
+        self.size = hitboxJson["size"]
+        self.x, self.y, self.z = hitboxJson["x"], hitboxJson["y"], hitboxJson["z"]
 
-        self.angle = hitbox_json["angle"]
-        self.kb_growth = hitbox_json["kb_growth"]
-        self.weight_dep_kb = hitbox_json["weight_dep_kb"]
-        self.hitbox_interaction = hitbox_json["hitbox_interaction"]
-        self.base_kb = hitbox_json["base_kb"]
+        self.angle = hitboxJson["angle"]
+        self.kbGrowth = hitboxJson["kbGrowth"]
+        self.weightDepKb = hitboxJson["weightDepKb"]
+        self.hitboxInteraction = hitboxJson["hitboxInteraction"]
+        self.baseKb = hitboxJson["baseKb"]
 
-        self.element = hitbox_json["element"]
-        self.shield_damage = hitbox_json["shield_damage"]
-        self.sfx = hitbox_json["sfx"]
-        self.hit_grounded = hitbox_json["hit_grounded"]
-        self.hit_airborne = hitbox_json["hit_airborne"]
+        self.element = hitboxJson["element"]
+        self.shieldDamage = hitboxJson["shieldDamage"]
+        self.sfx = hitboxJson["sfx"]
+        self.hitGrounded = hitboxJson["hitGrounded"]
+        self.hitAirborne = hitboxJson["hitAirborne"]
 
         for i, other in enumerate(Hitbox.uniqueHitboxes):
             if self.sameEffect(other):
@@ -82,8 +82,8 @@ class Hitbox(object):
     # equal in a gameplay-sense in the vast majority of cases
     # "functionally the same" - the post-hit effect and whether they hit is the same
     def sameEffect(self, other):
-        attrs = ["damage", "angle", "kb_growth", "weight_dep_kb", "hitbox_interaction",
-            "base_kb", "element", "shield_damage", "hit_grounded", "hit_airborne"]
+        attrs = ["damage", "angle", "kbGrowth", "weightDepKb", "hitboxInteraction",
+            "baseKb", "element", "shieldDamage", "hitGrounded", "hitAirborne"]
         for attr in attrs:
             if getattr(self, attr) != getattr(other, attr):
                 return False
@@ -99,15 +99,15 @@ class Hitbox(object):
             ("y", self.y),
             ("z", self.z),
             ("angle", self.angle),
-            ("kb_growth", self.kb_growth),
-            ("weight_dep_kb", self.weight_dep_kb),
-            ("hitbox_interaction", self.hitbox_interaction),
-            ("base_kb", self.base_kb),
+            ("kbGrowth", self.kbGrowth),
+            ("weightDepKb", self.weightDepKb),
+            ("hitboxInteraction", self.hitboxInteraction),
+            ("baseKb", self.baseKb),
             ("element", self.element),
-            ("shield_damage", self.shield_damage),
+            ("shieldDamage", self.shieldDamage),
             ("sfx", self.sfx),
-            ("hit_grounded", self.hit_grounded),
-            ("hit_airborne", self.hit_airborne),
+            ("hitGrounded", self.hitGrounded),
+            ("hitAirborne", self.hitAirborne),
             ("guid", self.guid),
             ("groupId", self.groupId),
         ])
@@ -116,28 +116,28 @@ class Hitbox(object):
         return odict([
             ("damage", self.damage),
             ("angle", self.angle),
-            ("kb_growth", self.kb_growth),
-            ("weight_dep_kb", self.weight_dep_kb),
-            ("hitbox_interaction", self.hitbox_interaction),
-            ("base_kb", self.base_kb),
+            ("kbGrowth", self.kbGrowth),
+            ("weightDepKb", self.weightDepKb),
+            ("hitboxInteraction", self.hitboxInteraction),
+            ("baseKb", self.baseKb),
             ("element", self.element),
-            ("shield_damage", self.shield_damage),
-            ("hit_grounded", self.hit_grounded),
-            ("hit_airborne", self.hit_airborne),
+            ("shieldDamage", self.shieldDamage),
+            ("hitGrounded", self.hitGrounded),
+            ("hitAirborne", self.hitAirborne),
         ])
 
 class Throw(object):
-    def __init__(self, throw_json):
+    def __init__(self, throwJson):
         # Throw commands always come in pairs.
         # The first has all the damage/knockback data
         # The second makes sure the throw is released
-        assert throw_json["throw_type"] == 0
-        self.damage = throw_json["damage"]
-        self.angle = throw_json["angle"]
-        self.kb_growth = throw_json["kb_growth"]
-        self.weight_dep_kb = throw_json["weight_dep_kb"]
-        self.base_kb = throw_json["base_kb"]
-        self.element = throw_json["element"]
+        assert throwJson["throwType"] == 0
+        self.damage = throwJson["damage"]
+        self.angle = throwJson["angle"]
+        self.kbGrowth = throwJson["kbGrowth"]
+        self.weightDepKb = throwJson["weightDepKb"]
+        self.baseKb = throwJson["baseKb"]
+        self.element = throwJson["element"]
 
         # This will be set to true upon encountering the second throw command
         # and used for validation
@@ -147,9 +147,9 @@ class Throw(object):
         return odict([
             ("damage", self.damage),
             ("angle", self.angle),
-            ("kb_growth", self.kb_growth),
-            ("weight_dep_kb", self.weight_dep_kb),
-            ("base_kb", self.base_kb),
+            ("kbGrowth", self.kbGrowth),
+            ("weightDepKb", self.weightDepKb),
+            ("baseKb", self.baseKb),
             ("element", self.element),
         ])
 
@@ -169,9 +169,9 @@ class FrameInfo(object):
 
 # This whole function is maybe super weird, but it's too much of a hassle to get rid of now
 def getFrameData(events, totalFrames, airNormal):
-    ignoreEvents = ["exit", "graphic_common", "rumble", "sfx", "continuation_control?",
-        "random_smash_sfx", "reverse_direction", "animate_texture", "sword_trail",
-        "bodyaura", "adjust_hitbox_size", "animate_model", "pseudo_random_sfx"]
+    ignoreEvents = ["exit", "gfx", "rumble", "sfx", "continuationControl?",
+        "randomSmashSfx", "reverseDirection", "animateTexture", "swordTrail",
+        "bodyaura", "adjustHitboxSize", "animateModel", "pseudoRandomSfx"]
 
     # in case this got called multiple times
     Hitbox.uniqueHitboxes = []
@@ -200,25 +200,25 @@ def getFrameData(events, totalFrames, airNormal):
                 eFields = event["fields"] if "fields" in event else None
                 currentEvent += 1
 
-                if eName == "wait_until":
+                if eName == "waitUntil":
                     waitUntil = eFields["frame"]
                     break
-                elif eName == "wait_for":
+                elif eName == "waitFor":
                     waitUntil = frame + eFields["frames"]
                     break
                 elif eName == "autocancel":
                     canAutocancel = not canAutocancel
-                elif eName == "allow_iasa":
+                elif eName == "allowIasa":
                     canIasa = True
-                elif eName == "end_all_collisions":
+                elif eName == "endAllCollisions":
                     activeHitboxes = odict()
                 elif eName == "hitbox":
                     activeHitboxes[eFields["id"]] = Hitbox(eFields)
                     if eFields["element"] == "grab":
                         isGrabAttack = True
-                elif eName == "adjust_hitbox_damage":
+                elif eName == "adjustHitboxDamage":
                     print("Adjust hitbox damage!:", eFields, event["bytes"])
-                    hitboxId = eFields["hitbox_id"]
+                    hitboxId = eFields["hitboxId"]
                     # This is not an assert, because some attacks (e.g. Link's AttackAirHi (uair))
                     # adjust the damage for hitboxes that are not active
                     # I am not 100% sure how to handle it correctly, but I assume it's fine to just ignore it
@@ -232,20 +232,20 @@ def getFrameData(events, totalFrames, airNormal):
                         # grabs have a throw release command after their hitboxes
                         # I don't know why and no one I asked knows why.
                         # If you are reading this and know it, tell me!
-                        assert eFields["throw_type"] == 1
+                        assert eFields["throwType"] == 1
                     else:
                         if throw:
                             # the second throw release command
-                            assert eFields["throw_type"] == 1
+                            assert eFields["throwType"] == 1
                             throw.released = True
                         else:
                             throw = Throw(eFields)
-                elif eName == "start_smash_charge":
+                elif eName == "startSmashCharge":
                     chargeFrame = True
-                elif eName == "set_loop":
-                    loopCounter = eFields["loop_count"]
+                elif eName == "setLoop":
+                    loopCounter = eFields["loopCount"]
                     loopStart = currentEvent
-                elif eName == "execute_loop":
+                elif eName == "executeLoop":
                     if loopCounter > 0:
                         loopCounter -= 1
                         currentEvent = loopStart
@@ -458,16 +458,16 @@ def main():
     with open(args.jsonfile) as inFile:
         data = json.load(inFile)
 
-    out_json = odict()
+    outJson = odict()
     for name, subactionIndex in subactions.items():
         summary = getAttackSummary(data, subactionIndex, args.fullhitboxes)
-        out_json[name] = summary
+        outJson[name] = summary
 
         if args.print and summary:
             printAttackSummary(summary)
 
     with open(args.outfile, "w") as outFile:
-        json.dump(out_json, outFile, indent=4)
+        json.dump(outJson, outFile, indent=4)
 
 if __name__ == "__main__":
     main()
