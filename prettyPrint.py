@@ -17,25 +17,25 @@ def shieldstun(damage):
 
 def printHitbox(hitbox):
     s = "dmg: {}".format(hitbox["damage"])
-    if hitbox["shield_damage"] > 0:
-        s += ", shield dmg: {}".format(hitbox["shield_damage"])
+    if hitbox["shieldDamage"] > 0:
+        s += ", shield dmg: {}".format(hitbox["shieldDamage"])
 
     s += ", angle: {}, BK: {}, KS: {}, WDKB: {}".format(
-        hitbox["angle"], hitbox["base_kb"], hitbox["kb_growth"], hitbox["weight_dep_kb"])
+        hitbox["angle"], hitbox["baseKb"], hitbox["kbGrowth"], hitbox["weightDepKb"])
 
     if hitbox["element"] != "normal":
         s += ", element: {}".format(hitbox["element"])
 
-    clang = hitbox["hitbox_interaction"] >= 2
+    clang = hitbox["hitboxInteraction"] >= 2
     s += ", {}clang".format("" if clang else "no ")
 
-    rebound = hitbox["hitbox_interaction"] == 3
+    rebound = hitbox["hitboxInteraction"] == 3
     s += ", {}rebound".format("" if rebound else "no ")
 
-    if not (hitbox["hit_grounded"] and hitbox["hit_airborne"]):
-        if hitbox["hit_grounded"]:
+    if not (hitbox["hitGrounded"] and hitbox["hitAirborne"]):
+        if hitbox["hitGrounded"]:
             s += ", only hits grounded"
-        elif hitbox["hit_airborne"]:
+        elif hitbox["hitAirborne"]:
             s += ", only hits airborne"
         else:
             s += ", hits nothing"
@@ -74,7 +74,7 @@ def printAttackSummary(summary):
         print("Throw:")
 
         s = "dmg: {}, angle: {}, BK: {}, KS: {}, WDKB: {}".format(throw["damage"],
-            throw["angle"], throw["base_kb"], throw["kb_growth"], throw["weight_dep_kb"])
+            throw["angle"], throw["baseKb"], throw["kbGrowth"], throw["weightDepKb"])
 
         if throw["element"] != "normal":
             s += ", element: {}".format(throw["element"])
