@@ -129,9 +129,11 @@ class Hitbox(object):
 class Throw(object):
     def __init__(self, throwJson):
         # Throw commands always come in pairs.
-        # The first has all the damage/knockback data
-        # The second makes sure the throw is released
-        assert throwJson["throwType"] == 0
+        # The first has all the damage/knockback data (throwType = 0)
+        # The second makes sure the throw is released (throwType = 1),
+        #   not sure what damage/knockback/etc. means for the throwType = 1
+        if throwJson["throwType"] != 0:
+            print("First throw command is not of throw type 0!")
         self.damage = throwJson["damage"]
         self.angle = throwJson["angle"]
         self.kbGrowth = throwJson["kbGrowth"]
@@ -144,7 +146,7 @@ class Throw(object):
         self.released = False
 
     def toJsonDict(self):
-        return odict([
+        ret = odict([
             ("damage", self.damage),
             ("angle", self.angle),
             ("kbGrowth", self.kbGrowth),
@@ -152,6 +154,9 @@ class Throw(object):
             ("baseKb", self.baseKb),
             ("element", self.element),
         ])
+        if not self.released:
+            ret["released"] = False
+        return ret
 
 class FrameInfo(object):
     def __init__(self, canAutocancel, canIasa, chargeFrame, activeHitboxes, throw=None):
@@ -164,8 +169,8 @@ class FrameInfo(object):
             self.hitboxes[hitboxId] = activeHitboxes[hitboxId]
 
         self.throw = throw
-        if self.throw:
-            assert throw.released
+        if self.throw and not throw.released:
+            print("Unreleased throw!")
 
 # This whole function is maybe super weird, but it's too much of a hassle to get rid of now
 def getFrameData(events, totalFrames, airNormal):
@@ -235,9 +240,11 @@ def getFrameData(events, totalFrames, airNormal):
                         assert eFields["throwType"] == 1
                     else:
                         if throw:
-                            # the second throw release command
-                            assert eFields["throwType"] == 1
-                            throw.released = True
+                            if eFields["throwType"] != 1:
+                                print("Second throw command is not of type 1!")
+                            else:
+                                # throw release command
+                                throw.released = True
                         else:
                             throw = Throw(eFields)
                 elif eName == "startSmashCharge":

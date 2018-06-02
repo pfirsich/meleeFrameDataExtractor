@@ -79,6 +79,9 @@ def printAttackSummary(summary):
         if throw["element"] != "normal":
             s += ", element: {}".format(throw["element"])
 
+        if "released" in throw and not throw["released"]:
+            s += ", unreleased/cargo"
+
         print(s)
 
     hitboxGuidToName = lambda x: chr(ord("A") + x)
