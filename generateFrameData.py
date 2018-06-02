@@ -320,7 +320,10 @@ def expandSubroutines(events, subroutines, selfOffset=None, visited=None):
         if event.get("name") == "subroutine" or event.get("name") == "goto":
             offset = event["fields"]["location"]
             if offset in visited:
-                return None # recursion detected
+                # Recursion detected!
+                # This usually happens with Attack100Loop, the rapid jap loop
+                # In this case it's sensible to just pretend the attack ended
+                return ret
             visited[offset] = True
 
             expanded = expandSubroutines(subroutines[str(offset)], subroutines, offset, visited)
