@@ -159,11 +159,12 @@ class Throw(object):
         return ret
 
 class FrameInfo(object):
-    def __init__(self, canAutocancel, canIasa, chargeFrame, activeHitboxes, throw=None):
+    def __init__(self, canAutocancel, canIasa, chargeFrame, projectile, activeHitboxes, throw=None):
         self.canAutocancel = canAutocancel
         self.canIasa = canIasa
         self.hitboxes = odict()
         self.chargeFrame = chargeFrame
+        self.projectile = projectile
 
         for hitboxId in activeHitboxes:
             self.hitboxes[hitboxId] = activeHitboxes[hitboxId]
@@ -195,6 +196,7 @@ def getFrameData(events, totalFrames, airNormal):
     while True: # frames
         chargeFrame = False
         throw = None
+        projectile = False
 
         if frame < waitUntil:
             pass
@@ -249,6 +251,8 @@ def getFrameData(events, totalFrames, airNormal):
                             throw = Throw(eFields)
                 elif eName == "startSmashCharge":
                     chargeFrame = True
+                elif eName == "shootitem":
+                    projectile = True
                 elif eName == "setLoop":
                     loopCounter = eFields["loopCount"]
                     loopStart = currentEvent
@@ -261,7 +265,7 @@ def getFrameData(events, totalFrames, airNormal):
                 else:
                     print("Unhandled event: {} ({}) on frame {} -- {}".format(event["commandId"], eName, frame, event["bytes"]))
 
-        frameInfo = FrameInfo(canAutocancel, canIasa, chargeFrame, activeHitboxes, throw)
+        frameInfo = FrameInfo(canAutocancel, canIasa, chargeFrame, projectile, activeHitboxes, throw)
         frameData.append(frameInfo)
 
         if totalFrames:
@@ -303,6 +307,9 @@ def getChargeFrame(frameData):
         if frame.chargeFrame:
             return i + 1
     return None
+
+def getProjectileFrames(frameData):
+    return [i+1 for i in range(len(frameData)) if frameData[i].projectile]
 
 def expandSubroutines(events, subroutines, selfOffset=None, visited=None):
     if visited == None:
@@ -374,6 +381,10 @@ def getAttackSummary(data, subactionIndex, fullHitboxes):
     chargeFrame = getChargeFrame(frameData)
     if chargeFrame:
         summary["chargeFrame"] = chargeFrame
+
+    projectileFrames = getProjectileFrames(frameData)
+    if len(projectileFrames) > 0:
+        summary["projectiles"] = projectileFrames
 
     summary["iasa"] = getIasa(frameData)
 

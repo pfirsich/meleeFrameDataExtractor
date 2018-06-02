@@ -66,6 +66,8 @@ def printAttackSummary(summary):
         print("Auto-Cancel: <{}, >{}".format(summary["autoCancelBefore"], summary["autoCancelAfter"]))
         print("Landing Lag:", summary["landingLag"])
         print("L-cancelled:", summary["lcancelledLandingLag"])
+    if "projectiles" in summary:
+        print("Projectile comes out:", ", ".join(map(str, summary["projectiles"])))
 
     # throw
     if "throw" in summary:
