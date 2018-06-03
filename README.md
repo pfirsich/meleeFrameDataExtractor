@@ -24,14 +24,25 @@ Most people don't have to generate the framedata dumps themselves and can just u
 The data generated with this tool is included in a website made by me that presents it in a more accessible manner and uses the hitbox grouping information to produce pages and gfycats like here: [Samus - Dash Attack](http://melee-framedata.theshoemaker.de/samus/dashattack.html) or [Samus - Neutral Air](http://melee-framedata.theshoemaker.de/samus/nair.html)
 
 ## ToDo
-* Add special subactions for each character
-* Process events `0x68`, `0x6C` and `0x70` that modify bone/body collision state and include invincibility data into framedata JSON files.
+* Extend [specialSubactions.py](https://github.com/pfirsich/meleeFrameDataExtractor/blob/master/specialSubactions.py) to include proper special names for all characters. This is something people without programming experience can help really well with too. So if you care about proper special names for your character, feel free to add them!
 * Process events `0x74` and `0x78` that modify jab follow up state and include data about when jab followups are possible into framedata JSON files.
+* Process events `0x68`, `0x6C` and `0x70` that modify bone/body collision state and include invincibility data into framedata JSON files.
 * Process the `0xCC` (self damage) event and include that data in the framedata file.
 * Find out if it is possible to determine which projectile is shot by the `0x60` event. It seems the event is alway `60 00 00 00` and some characters even use other events to shoot projectiles.
 
 ## Commands to figure out if they are relevant
-* `0x7C` ("model_state"?)
-* `0x8C` ("held_item_invisibility"?)
-* `0xC8` ("enable_ragdoll_physics"?)
+Common:
+* `0x7C` ("modelState"?)
+* `0x8C` ("heldItemInvisibility"?)
+* `0x90` ("bodyArticleInvisibility"?)
+* `0xC8` ("enableRagdollPhysics"?)
+* `0xE9` (wind effect?)
+
+Specials:
+* `0x38` ("hitboxSetFlags"?)
 * `0x64`
+* `0x54`
+* `0xDC` ("landingSfxAndGfx"?)
+* `0x20` (loops some animation?)
+* `0xD4` (Kirby has these)
+* `0x9C` (Ness has these)

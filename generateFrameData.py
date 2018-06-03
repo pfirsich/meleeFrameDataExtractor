@@ -5,6 +5,7 @@ import math
 import sys
 
 from prettyPrint import printAttackSummary
+from specialSubactions import specialSubactions
 
 attackMapping = odict([
     ("jab1", 0x2e),
@@ -42,7 +43,7 @@ attackMapping = odict([
     ("dthrow", 0xfa),
 ])
 
-specialStartId = 0x127
+specialStartIndex = 0x127
 
 class Hitbox(object):
     uniqueHitboxes = [] # unique in the sense of "sameEffect"
@@ -203,7 +204,7 @@ def getFrameData(events, totalFrames, airNormal):
         else:
             while currentEvent < len(events): # events
                 event = events[currentEvent]
-                eName = event["name"]
+                eName = event.get("name", None)
                 eFields = event["fields"] if "fields" in event else None
                 currentEvent += 1
 
@@ -224,7 +225,6 @@ def getFrameData(events, totalFrames, airNormal):
                     if eFields["element"] == "grab":
                         isGrabAttack = True
                 elif eName == "adjustHitboxDamage":
-                    print("Adjust hitbox damage!:", eFields, event["bytes"])
                     hitboxId = eFields["hitboxId"]
                     # This is not an assert, because some attacks (e.g. Link's AttackAirHi (uair))
                     # adjust the damage for hitboxes that are not active
@@ -260,6 +260,13 @@ def getFrameData(events, totalFrames, airNormal):
                     if loopCounter > 0:
                         loopCounter -= 1
                         currentEvent = loopStart
+                elif eName == "return":
+                    # Sometimes in the middle of a subaction (specials)
+                    # a couple of return commands may appear
+                    # I assume this is because parts of the subaction are used as subroutines/goto targets
+                    # So for regular execution these commands are probably just ignored.
+                    # Maybe not though, I didn't test it. If you know better, tell me!
+                    pass
                 elif eName in ignoreEvents:
                     pass
                 else:
@@ -363,8 +370,8 @@ def getAttackSummary(data, subactionIndex, fullHitboxes):
         print("No animation! This character possibly does not have this attack.\n")
         return None
     animation = data["animationFiles"][subaction["animationFile"]]["nodes"][0]
-    print("Animation: {} - {}".format(animation["name"], animation["shortName"]))
-    summary["animationName"] = animation["name"]
+    # The animation name is always the same as the subaction name
+    # summary["animationName"] = animation["name"]
 
     totalFrames = animation["data"]["numFrames"]
     assert int(totalFrames) == totalFrames
@@ -442,6 +449,19 @@ def getAttackSummary(data, subactionIndex, fullHitboxes):
 
     return summary
 
+def getSpecialSubactions(data):
+    ret = {}
+    subactions = data["nodes"][0]["data"]["subactions"]
+    charName = data["nodes"][0]["name"][len("ftData"):]
+    for i in range(specialStartIndex, len(subactions)):
+        if subactions[i]["shortName"].startswith("Special"):
+            # we can't just use the actual names, since they are sometimes used multiple times
+            name = hex(i)
+            if charName in specialSubactions and i in specialSubactions[charName]:
+                name = specialSubactions[charName][i]
+            ret[name] = i
+    return ret
+
 def main():
     parser = argparse.ArgumentParser(description="Generate Frame data from JSON-dumped character .dat files")
     parser.add_argument("jsonfile", help="The JSON file with the dumped .dat character data.")
@@ -451,6 +471,9 @@ def main():
     parser.add_argument("--fullhitboxes", default=False, action="store_true", help="Don't group the hitboxes by functional sameness, but rather include the all hitboxes fully (including boneId, size, transformations) in each hitframe.")
     args = parser.parse_args()
 
+    with open(args.jsonfile) as inFile:
+        data = json.load(inFile)
+
     defaultSubactions = attackMapping
     if args.subactions:
         subactions = {}
@@ -458,6 +481,8 @@ def main():
         for arg in args.subactions:
             if arg == "default" or arg == "defaults":
                 subactions.update(defaultSubactions)
+            elif arg == "special" or arg == "specials":
+                subactions.update(getSpecialSubactions(data))
             else:
                 parts = arg.split(":", 1)
                 if len(parts) > 1:
@@ -474,13 +499,12 @@ def main():
                             quit("Unknown predefined subaction '{}'".format(name))
                 subactions[name] = index
     else:
-        subactions = defaultSubactions
-
-    with open(args.jsonfile) as inFile:
-        data = json.load(inFile)
+        subactions = defaultSubactions.copy()
+        subactions.update(getSpecialSubactions(data))
 
     outJson = odict()
-    for name, subactionIndex in subactions.items():
+    for name in sorted(subactions, key=lambda x: subactions[x]):
+        subactionIndex = subactions[name]
         summary = getAttackSummary(data, subactionIndex, args.fullhitboxes)
         outJson[name] = summary
 
