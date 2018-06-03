@@ -213,6 +213,8 @@ def getFrameData(events, totalFrames, airNormal):
                     canAutocancel = not canAutocancel
                 elif eName == "allowIasa":
                     canIasa = True
+                elif eName == "endOneCollision":
+                    activeHitboxes.pop(eFields["hitboxId"])
                 elif eName == "endAllCollisions":
                     activeHitboxes = odict()
                 elif eName == "hitbox":
