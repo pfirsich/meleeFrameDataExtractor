@@ -20,6 +20,11 @@ Most people don't have to generate the framedata dumps themselves and can just u
 * [framedata-json](http://melee.theshoemaker.de/?dir=framedata-json)
 * [framedata-json-fullhitboxes](http://melee.theshoemaker.de/?dir=framedata-json-fullhitboxes)
 
+You can also look at the text files I generated with `prettyPrint.py`, which should look somewhat like superdoodleman's framedata:
+* [framedata-txt](http://melee.theshoemaker.de/?dir=framedata-txt)
+* [framedata-txt-fullhitboxes](http://melee.theshoemaker.de/?dir=framedata-txt-fullhitboxes)
+
+
 ## [melee-framedata](http://melee-framedata.theshoemaker.de/)
 The data generated with this tool is included in a website made by me that presents it in a more accessible manner and uses the hitbox grouping information to produce pages and gfycats like here: [Samus - Dash Attack](http://melee-framedata.theshoemaker.de/samus/dashattack.html) or [Samus - Neutral Air](http://melee-framedata.theshoemaker.de/samus/nair.html)
 
