@@ -30,7 +30,7 @@ specialSubactions = {
     },
     "Mario": { # Mario
     },
-    "Mars": { # Mars
+    "Mars": { # Marth
     },
     "Mewtwo": { # Mewtwo
     },
@@ -42,7 +42,7 @@ specialSubactions = {
     },
     "Pikachu": { # Pikachu
     },
-    "Emblem": { # Emblem
+    "Emblem": { # Roy
     },
     "Samus": {
         0x127: "dspecial_hit",
@@ -66,7 +66,7 @@ specialSubactions = {
     },
     "Yoshi": { # Yoshi
     },
-    "Clink": { # Clink
+    "Clink": { # Young Link
     },
     "Zelda": { # Zelda
     }
