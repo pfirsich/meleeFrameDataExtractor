@@ -34,6 +34,7 @@ The data generated with this tool is included in a website made by me that prese
 * Process events `0x68`, `0x6C` and `0x70` that modify bone/body collision state and include invincibility data into framedata JSON files.
 * Process the `0xCC` (self damage) event and include that data in the framedata file.
 * Find out if it is possible to determine which projectile is shot by the `0x60` event. It seems the event is alway `60 00 00 00` and some characters even use other events to shoot projectiles.
+* Handle multiple throw (0) commands somehow. So far I ignore too many throw (1, release) commands, because they occur in grabs and sometimes in specials that grab and throw. But for subactions with multiple throw (0) commands, all further throw (0) commands are just ignored. Bowser's SpecialAirSEndF is the only subaction that has multiple throw (0). They occur in this order: throw(0), throw (1), throw (0), throw (1). The first throw(0) has 11 damage and is on frame 1 the second has 10 damage and is on frame 35. If you just side-B someone in air and do nothing Bowser bites the grabbed character (4 damage). If you throw after the bite, you do 14 damage in total. If you throw before the bite you do 11. So maybe one of them is the throw if you do it immediately and one is if you do it after the bite.
 
 ## Commands to figure out if they are relevant
 Common:

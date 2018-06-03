@@ -129,12 +129,7 @@ class Hitbox(object):
 
 class Throw(object):
     def __init__(self, throwJson):
-        # Throw commands always come in pairs.
-        # The first has all the damage/knockback data (throwType = 0)
-        # The second makes sure the throw is released (throwType = 1),
-        #   not sure what damage/knockback/etc. means for the throwType = 1
-        if throwJson["throwType"] != 0:
-            print("First throw command is not of throw type 0!")
+
         self.damage = throwJson["damage"]
         self.angle = throwJson["angle"]
         self.kbGrowth = throwJson["kbGrowth"]
@@ -235,20 +230,21 @@ def getFrameData(events, totalFrames, airNormal):
                     else:
                         print("Adjust damage for non-active hitbox {}!".format(hitboxId))
                 elif eName == "throw":
-                    if isGrabAttack:
-                        # grabs have a throw release command after their hitboxes
-                        # I don't know why and no one I asked knows why.
-                        # If you are reading this and know it, tell me!
-                        assert eFields["throwType"] == 1
-                    else:
+                    # Throw commands always come in pairs.
+                    # The first has all the damage/knockback data (throwType = 0)
+                    # The second makes sure the throw is released (throwType = 1),
+                    #   not sure what damage/knockback/etc. means for the throwType = 1
+                    if eFields["throwType"] == 0:
+                        assert throw == None, "Second throw!"
+                        throw = Throw(eFields)
+                    else: # == 1
                         if throw:
-                            if eFields["throwType"] != 1:
-                                print("Second throw command is not of type 1!")
-                            else:
-                                # throw release command
-                                throw.released = True
+                            throw.released = True
                         else:
-                            throw = Throw(eFields)
+                            # grabs have a throw release command after their hitboxes
+                            # I don't know why and no one I asked knows why.
+                            # If you are reading this and know it, tell me!
+                            print("Unmatched throw release (1) command!")
                 elif eName == "startSmashCharge":
                     chargeFrame = True
                 elif eName == "shootitem":
@@ -411,8 +407,11 @@ def getAttackSummary(data, subactionIndex, fullHitboxes):
     # Throw
     for frame in frameData:
         if frame.throw:
-            assert not "throw" in summary
-            summary["throw"] = frame.throw.toJsonDict()
+            #assert not "throw" in summary
+            if "throw" in summary:
+                print("Multiple throw (0)! Only the first throw of the subaction is saved!")
+            else:
+                summary["throw"] = frame.throw.toJsonDict()
 
     # Hitframes
     hitFrames = []
